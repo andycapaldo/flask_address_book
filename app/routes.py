@@ -8,7 +8,8 @@ from app.models import AddressBook, User
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    addresses = db.session.execute(db.select(AddressBook)).scalars().all()
+    return render_template('index.html', addresses=addresses)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -38,13 +39,37 @@ def signup():
         return redirect(url_for('index'))
     return render_template('signup.html', form=form)
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     # LoginForm instance
     form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        remember_me = form.remember_me.data
+
+        # Query the User table for a user with that username
+        user = db.session.execute(db.select(User).where(User.username==username)).scalar()
+        # Check if there is a user AND the password is correct for that user
+        if user is not None and user.check_password(password):
+            login_user(user, remember=remember_me)
+            # Log the user in via Flask-Login
+            flash(f'{user.username} has successfully logged in.')
+            return redirect(url_for('index'))
+        else:
+            flash('Incorrect username and/or password')
+            return redirect(url_for('login'))
     return render_template('login.html', form=form)
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have successfully logged out')
+    return redirect(url_for('index'))
+
 @app.route('/phonebook', methods=['GET', 'POST'])
+@login_required
 def phonebook():
     phonebook = Phonebook()
     if phonebook.validate_on_submit():
@@ -53,14 +78,14 @@ def phonebook():
         phone_number = phonebook.phone_number.data
         address = phonebook.address.data
 
-        # Check to make sure we don't get duplicate entries by phone number; assumption is that everyone has a different phone number (home numbers are extremely rare these days)
+        # Check to make sure we don't get duplicate entries by phone number; assumption is that everyone has a different phone number
         check_book = db.session.execute(db.select(AddressBook).where( (AddressBook.phone_number==phone_number) )).scalars().all()
         if check_book:
             flash('This person is already in the phonebook!')
             return redirect(url_for('phonebook'))
         
         # Create a new instance of the AddressBook class with the data from the form
-        new_address = AddressBook(first_name=first_name, last_name=last_name, phone_number=phone_number, address=address)
+        new_address = AddressBook(first_name=first_name, last_name=last_name, phone_number=phone_number, address=address, user_id=current_user.id)
         # Add the new entry into the database
         db.session.add(new_address)
         db.session.commit()

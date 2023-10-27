@@ -5,13 +5,15 @@ from flask_login import UserMixin
 
 
 
-class AddressBook(db.Model, UserMixin):
+class AddressBook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
     phone_number = db.Column(db.Integer, nullable=False, unique=True)
     address = db.Column(db.String, nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
 
     def __repr__(self):
         return f"<ID {self.id}|{self.address}>"
@@ -27,7 +29,7 @@ class AddressBook(db.Model, UserMixin):
         }
     
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
@@ -35,6 +37,7 @@ class User(db.Model):
     username = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String, nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    entries = db.relationship('AddressBook', backref='author')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
