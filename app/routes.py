@@ -1,7 +1,8 @@
 from app import app, db
 from flask import render_template, redirect, url_for, flash
-from app.forms import Phonebook
-from app.models import AddressBook
+from flask_login import login_user, logout_user, login_required, current_user
+from app.forms import Phonebook, SignUpForm
+from app.models import AddressBook, User
 
 
 
@@ -9,6 +10,30 @@ from app.models import AddressBook
 def index():
     return render_template('index.html')
 
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = SignUpForm()
+    if form.validate_on_submit():
+        first_name = form.first_name.data
+        last_name = form.last_name.data
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
+        
+        # Check to see if we already have a User with that username or email
+        check_user = db.session.execute(db.select(User).where( (User.username==username) | (User.email==email) )).scalars().all()
+        if check_user:
+            flash('A user with that username and/or email already exists')
+            return redirect(url_for('signup'))
+        
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Redirect to the home page
+        return redirect(url_for('index'))
+    return render_template('signup.html', form=form)
 
 @app.route('/phonebook', methods=['GET', 'POST'])
 def phonebook():
