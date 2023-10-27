@@ -14,8 +14,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Instance of LoginManager to handle authentication
-# login = LoginManager(app)
-# login.login_view = 'login'
+login = LoginManager(app)
+login.login_view = 'login'
 
 
 

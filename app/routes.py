@@ -1,7 +1,7 @@
 from app import app, db
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import Phonebook, SignUpForm
+from app.forms import Phonebook, SignUpForm, LoginForm
 from app.models import AddressBook, User
 
 
@@ -31,9 +31,18 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
+        login_user(new_user)
+        flash(f"{new_user.username} has been created!")
+
         # Redirect to the home page
         return redirect(url_for('index'))
     return render_template('signup.html', form=form)
+
+@app.route('/login')
+def login():
+    # LoginForm instance
+    form = LoginForm()
+    return render_template('login.html', form=form)
 
 @app.route('/phonebook', methods=['GET', 'POST'])
 def phonebook():
