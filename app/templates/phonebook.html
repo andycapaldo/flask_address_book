@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Phonebook Form{% endblock %}
+
+{% block header %}
+    <h1>Fill out the form below to be added to the Phonebook.</h1>
+{% endblock %}
+
+{% block content %}
+<div class="col">
+    <div class="card mt-3">
+        <div class="card-body">
+            <form action="" method="post">
+                {{ phonebook.csrf_token }}
+                {{ phonebook.first_name.label }}
+                {{ phonebook.first_name(class='form-control', placeholder='Enter First Name')}}
+
+                {{ phonebook.last_name.label }}
+                {{ phonebook.last_name(class='form-control', placeholder='Enter Last Name')}}
+
+                {{ phonebook.phone_number.label }}
+                {{ phonebook.phone_number(class='form-control', placeholder='Enter Phone Number')}}
+
+                {{ phonebook.address.label }}
+                {{ phonebook.address(class='form-control', placeholder='Enter Address')}}
+
+                {{ phonebook.submit(class='btn btn-primary w-100 mt-3')}}
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

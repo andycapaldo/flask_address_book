@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>Welcome to Andy's Flask Phonebook App!</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="col-12 text-center py-5">
+        <h2>Click the button below to add to the phonebook</h2>
+    </div>
+    <div class="col-12 text-center py-5">
+        <a class="btn btn-primary w-50 mt-5" href="{{ url_for('phonebook') }}">Phonebook</a>
+    </div>
+{% endblock %}
