@@ -107,6 +107,49 @@ def address_view(address_id):
     return render_template('address.html', address=address)
 
 
+# Route to edit an AddressBook entry
+@app.route('/address/<address_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_address(address_id):
+    address = db.session.get(AddressBook, address_id)
+    if not address:
+        flash('That entry does not exist!')
+        return redirect(url_for('index'))
+    if current_user != address.author:
+        flash('You can only edit phonebook entries you have created!')
+        return redirect(url_for('address_view', address_id=address_id))
+    # Create an instance of the PhoneBook form
+    form = Phonebook()
+
+    # If the form is submitted, update the post
+    if form.validate_on_submit():
+        address.first_name = form.first_name.data
+        address.last_name = form.last_name.data
+        check_phone_number = form.phone_number.data
+        # Check to make sure another person in the phonebook doesn't have the same phone number (per the assumption above)
+
+        check_book = db.session.execute(db.select(AddressBook).where( (AddressBook.phone_number==check_phone_number) )).scalars().all()
+        if check_book:
+            flash('That phone number belongs to another person in the phonebook!')
+            return redirect(url_for('address_view', address_id=address_id))
+        else:
+        # If the phone number doesn't belong to another entry, we can update the rest of the entries successfully
+            address.phone_number = form.phone_number.data
+            address.address = form.address.data
+            # Commit to the db
+            db.session.commit()
+            flash(f'Entry # {address.id} has been updated!', 'success')
+            return redirect(url_for('index'))
+    
+    # Pre-populate the phonebook entry with the entry's data
+    form.first_name.data = address.first_name
+    form.last_name.data = address.last_name
+    form.phone_number.data = address.phone_number
+    form.address.data = address.address
+    return render_template('edit_entry.html', address=address, form=form)
+
+
+
 # Route for logged-in user to view their entries into the phonebook
 @app.route('/profile')
 @login_required

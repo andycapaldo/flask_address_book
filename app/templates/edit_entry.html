@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit A Phonebook Entry{% endblock %}
+
+{% block header %}
+    <h1>Edit Entry #{{ address.id }}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="col">
+        <div class="card mt-3">
+            <div class="card-body">
+                <form action="" method="post">
+                    {{ form.csrf_token }}
+
+                    {{ form.first_name.label }}
+                    {{ form.first_name(class='form-control') }}
+
+                    {{ form.last_name.label }}
+                    {{ form.last_name(class='form-control') }}
+
+                    {{ form.phone_number.label }}
+                    {{ form.phone_number(class='form-control') }}
+
+                    {{ form.address.label }}
+                    {{ form.address(class='form-control')}}
+
+                    {{ form.submit(class='btn btn-primary mt-3 w-100') }}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
