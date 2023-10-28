@@ -8,6 +8,7 @@ from app.models import AddressBook, User
 
 @app.route('/')
 def index():
+    # Shows all entries in the phonebook when user is logged in
     addresses = db.session.execute(db.select(AddressBook)).scalars().all()
     return render_template('index.html', addresses=addresses)
 
@@ -39,6 +40,7 @@ def signup():
         return redirect(url_for('index'))
     return render_template('signup.html', form=form)
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # LoginForm instance
@@ -68,6 +70,7 @@ def logout():
     flash('You have successfully logged out')
     return redirect(url_for('index'))
 
+
 @app.route('/phonebook', methods=['GET', 'POST'])
 @login_required
 def phonebook():
@@ -92,3 +95,22 @@ def phonebook():
 
         return redirect(url_for('index'))
     return render_template('phonebook.html', phonebook=phonebook)
+
+
+# Route to view a single entry in the phonebook by ID
+@app.route('/address/<address_id>')
+def address_view(address_id):
+    address = db.session.get(AddressBook, address_id)
+    if not address:
+        flash('That entry does not exist')
+        return redirect(url_for('index'))
+    return render_template('address.html', address=address)
+
+
+# Route for logged-in user to view their entries into the phonebook
+@app.route('/profile')
+@login_required
+def profile():
+    addresses = db.session.execute(db.select(AddressBook).where( (AddressBook.user_id == current_user.id))).scalars().all()
+    return render_template('profile.html', addresses=addresses)
+
