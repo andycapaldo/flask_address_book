@@ -22,6 +22,7 @@
                             <p class="card-text"> Address: {{ a.address }}</p>
                             <p class="card-text"><small class="text-body-secondary">By {{ a.author.username }}</small></p>
                             <p class="card-text">{{ a.date_created.strftime('%A %B %d, %Y at %I:%M%p') }}</p>
+                            <a href="{{ url_for('address_view', address_id=a.id) }}" class="btn btn-primary">View Entry</a>
                         </div>
                     </div>
                 </div>
