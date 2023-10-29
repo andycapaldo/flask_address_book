@@ -149,6 +149,24 @@ def edit_address(address_id):
     return render_template('edit_entry.html', address=address, form=form)
 
 
+# Delete an entry 
+@app.route('/address/<address_id>/delete', methods=['GET'])
+@login_required
+def delete_entry(address_id):
+    address = db.session.get(AddressBook, address_id)
+    if not address:
+        flash('That entry does not exist!')
+        return redirect(url_for('index'))
+    if current_user != address.author:
+        flash('You can only delete phonebook entries you have created!')
+        return redirect(url_for('address_view', address_id=address_id))
+    
+    db.session.delete(address)
+    db.session.commit()
+
+    flash(f'Entry #{address.id} has been deleted.')
+    return redirect(url_for('index'))
+
 
 # Route for logged-in user to view their entries into the phonebook
 @app.route('/profile')
