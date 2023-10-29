@@ -12,7 +12,7 @@ def get_addresses():
 
 
 # Endpoint to get an address by ID
-@api.route('/contacts/<address_id>')
+@api.route('/contacts/<address_id>', methods=['GET'])
 def get_address(address_id):
     address = db.session.get(AddressBook, address_id)
     if not address:
