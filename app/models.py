@@ -63,6 +63,17 @@ class User(db.Model, UserMixin):
         db.session.commit()
         return self.token
     
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email,
+            'username': self.username,
+            'date_created': self.date_created,
+            'user_id': self.id
+        }
+    
 @login.user_loader
 def get_user(user_id):
     return db.session.get(User, user_id)

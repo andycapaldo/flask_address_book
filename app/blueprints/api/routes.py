@@ -1,7 +1,7 @@
 from flask import request
 from . import api
 from app import db
-from app.models import AddressBook
+from app.models import AddressBook, User
 from .auth import basic_auth, token_auth
 
 
@@ -28,6 +28,37 @@ def get_address(address_id):
     if not address:
         return {'error': f"Address with an ID of {address_id} does not exist"}, 404
     return address.to_dict()
+
+
+# Endpoint to create a new user
+@api.route('/users', methods=['POST'])
+def create_user():
+    # Check to see that the request body is JSON
+    if not request.is_json:
+        return {'error': 'Your content-type must be application/json'}, 400
+    # Get the data from the request body
+    data = request.json
+    # Validate incoming data
+    required_fields = ['first_name', 'last_name', 'email', 'username', 'password']
+    missing_fields = []
+    for field in required_fields:
+        if field not in data:
+            missing_fields.append(field)
+        if missing_fields:
+            return {'error': f"{', '.join(missing_fields)} must be in the request body"}, 400
+    
+    # Get the data from the request
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
+    username = data.get('username')
+    password = data.get('password')
+
+    # Create the new user and add it to the database
+    new_user = User(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
+    db.session.add(new_user)
+    db.session.commit()
+    return new_user.to_dict(), 201
 
 
 # Endpoint to create a new address entry - requires token authentication
