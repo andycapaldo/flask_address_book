@@ -5,14 +5,14 @@ from app.models import AddressBook
 
 
 # Endpoint to get all addresses
-@api.route('/addresses', methods=['GET'])
+@api.route('/contacts', methods=['GET'])
 def get_addresses():
     addresses = db.session.execute(db.select(AddressBook)).scalars().all()
     return [address.to_dict() for address in addresses]
 
 
 # Endpoint to get an address by ID
-@api.route('/addresses/<address_id>')
+@api.route('/contacts/<address_id>')
 def get_address(address_id):
     address = db.session.get(AddressBook, address_id)
     if not address:

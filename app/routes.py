@@ -8,8 +8,11 @@ from app.models import AddressBook, User
 
 @app.route('/')
 def index():
-    # Shows all entries in the phonebook when user is logged in
-    addresses = db.session.execute(db.select(AddressBook)).scalars().all()
+    # Shows all user's entries in the phonebook only when they are logged in
+    if current_user.is_active:
+        addresses = db.session.execute(db.select(AddressBook).where( (AddressBook.user_id == current_user.id))).scalars().all()
+    else:
+        addresses = []
     return render_template('index.html', addresses=addresses)
 
 
@@ -80,12 +83,6 @@ def phonebook():
         last_name = phonebook.last_name.data
         phone_number = phonebook.phone_number.data
         address = phonebook.address.data
-
-        # Check to make sure we don't get duplicate entries by phone number; assumption is that everyone has a different phone number
-        check_book = db.session.execute(db.select(AddressBook).where( (AddressBook.phone_number==phone_number) )).scalars().all()
-        if check_book:
-            flash('This person is already in the phonebook!')
-            return redirect(url_for('phonebook'))
         
         # Create a new instance of the AddressBook class with the data from the form
         new_address = AddressBook(first_name=first_name, last_name=last_name, phone_number=phone_number, address=address, user_id=current_user.id)
@@ -125,21 +122,12 @@ def edit_address(address_id):
     if form.validate_on_submit():
         address.first_name = form.first_name.data
         address.last_name = form.last_name.data
-        check_phone_number = form.phone_number.data
-        # Check to make sure another person in the phonebook doesn't have the same phone number (per the assumption above)
-
-        check_book = db.session.execute(db.select(AddressBook).where( (AddressBook.phone_number==check_phone_number) )).scalars().all()
-        if check_book:
-            flash('That phone number belongs to another person in the phonebook!')
-            return redirect(url_for('address_view', address_id=address_id))
-        else:
-        # If the phone number doesn't belong to another entry, we can update the rest of the entries successfully
-            address.phone_number = form.phone_number.data
-            address.address = form.address.data
-            # Commit to the db
-            db.session.commit()
-            flash(f'Entry # {address.id} has been updated!', 'success')
-            return redirect(url_for('index'))
+        address.phone_number = form.phone_number.data
+        address.address = form.address.data
+        # Commit to the db
+        db.session.commit()
+        flash(f'Entry # {address.id} has been updated!', 'success')
+        return redirect(url_for('index'))
     
     # Pre-populate the phonebook entry with the entry's data
     form.first_name.data = address.first_name
@@ -167,11 +155,4 @@ def delete_entry(address_id):
     flash(f'Entry #{address.id} has been deleted.')
     return redirect(url_for('index'))
 
-
-# Route for logged-in user to view their entries into the phonebook
-@app.route('/profile')
-@login_required
-def profile():
-    addresses = db.session.execute(db.select(AddressBook).where( (AddressBook.user_id == current_user.id))).scalars().all()
-    return render_template('profile.html', addresses=addresses)
 
